@@ -1,0 +1,166 @@
+##Autora Laura Juliana Rodríguez Ramírez 
+##Importo el modulo para poder trabajar con el archivo
+import csv
+##Creo una función cuyo parametro es el archivo
+##Dentro creo dos variables que me guarden diccionarios
+##vacios,uno para las compras(con la clave como el nombre),que almacene
+##{pais:cantidad de compras}
+## y otro con las claves en minusculas para poder realizar las busquedas
+def cargar_compras(archivo):
+    compras_por_pais = {}
+    paises_minusculas = {}
+##Utilizo try para capturar excepciones y evitar errores
+##abro el archivo con open y utilizo newline para prevenir
+##problemas con los saltos de línea,utilizo tambien utf-8 para 
+##el manejo de caracteres especiales, creo una nueva variable en la que 
+##uso csv.DictReader para que me lea el archivo y convierta cada fila 
+##en un diccionario(las claves son los nombres de las columnas,extraidos 
+##de la primera fila del archivo)
+    try:
+        with open(archivo, newline='', encoding='utf-8') as f:
+            lector = csv.DictReader(f)
+##Creo un for que recorra cada fila del archivo             
+            for fila in lector:
+##Creo una variable que obtiene con el metodo get el nombre del pais
+##buscandolo en la fila actual,si no existe devuelve la cadena vacia,uso
+##strip para eliminar espacios en blanco al inicio y final del texto
+                pais_original = fila.get('Country', '').strip()
+##Creo un if con la variable creada               
+                if pais_original:
+##Busco si el pais ya existe en el diccionario con el metodo get para
+##que busque la clave y devuelva su valor(si no existe debe devolver 0)
+##al valor obtenido le suma 1 y guarda ese nuevo valor
+                    compras_por_pais[pais_original] = compras_por_pais.get(pais_original, 0) + 1
+##Convierto el nombre a minusculas con el metodo .lower
+                    paises_minusculas = pais_original.lower()
+##verifico con otro if si el nombre del pais ya esta en el diccionario
+##uso el operador nor in para que me devuelva true si la clave no existe
+##en el diccionario
+                    if paises_minusculas not in paises_minusculas:
+##Agrego en el diccionario la clave y el valor con el nombre del pais 
+                        paises_minusculas[paises_minusculas] = pais_original
+##Devuelvo los diccionarios con un return                    
+        return compras_por_pais, paises_minusculas
+##Uso except para capturar un posible error como una ruta no especificada 
+    except FileNotFoundError:
+##Muestro lo excepcion con un mensaje(uso raise para ello) sobre el archivo no encontrado
+        raise FileNotFoundError(f"Error: El archivo {archivo} no fue encontrado")
+##Ahora lo uso por si hay errores en la columna faltante perteneciente al pais o 
+## un error logico en la estructura de mi archivo
+    except KeyError:
+        raise KeyError("Error: El archivo CSV no tiene la columna 'Country'")
+##Creo una funcion para mostrar los resultados por cantidad de compras
+def mostrar_resultados(resultados, cantidad):
+##Utilizo un if e imprimo los paises con x cantidad de compras   
+    if resultados:
+        print(f"\nPaíses con exactamente {cantidad} compras:")
+##Utilizo un for y el metodo sorted para organizar todos los paises alfabeticamente
+##Y despues los imprimo con una viñeta para enlistarlos
+        for pais in sorted(resultados):
+            print(f"• {pais}")
+##Si ningun pais tiene esa x cantidad de compras saldra que ninguno las realizo            
+    else:
+        print(f"\nNingún país realizó exactamente {cantidad} compras")
+##Creo una funcion para obtener la cantidad a evaluar
+def obtener_cantidad():
+##Creo un bucle While en donde nombro la variable de entrada y utilizo un input
+##para ingresar el valor de compras deseado
+    while True:
+        entrada = input("\nIngrese la cantidad de compras: ")
+##Uso try para capturar la excepcion en el caso de que el usuario ingrese valores
+##negativos,uso un int para que me transforme en un valor numerico el string ingresado
+##por consola
+        try:
+            compras = int(entrada)
+            if compras < 0: raise ValueError
+            return compras
+        except ValueError:
+            print("Error: Debe ingresar un número entero positivo")
+##Creo una funcion para consultar por un x pais su cantidad de compras
+##Uso como parametros las compras x pais y el pais en minusculas
+def consultar_por_pais(compras_por_pais, paises_minusculas):
+##Mediante un input solicito por consola el nombre del pais y utilizo strip
+##para eliminar los espacios en blanco al inicio y final
+    pais_input = input("\nIngrese el nombre del país a consultar: ").strip()
+##Si el pais ingresado es una cadena vacia o solo espacios saldra un mensaje
+    if not pais_input:
+        print("Debe ingresar un nombre de país válido")
+        return
+##Utilizo un if que verifique si el pais se encuentra escrito tal cual como esta
+##en el diccionario de compras por pais usando el in para buscar las coincidencias 
+##exactas en las claves y si es asi me imprime el pais y las compras realizadas
+    if pais_input in compras_por_pais:
+        print(f"\nEl país '{pais_input}' realizó {compras_por_pais[pais_input]} compras.")
+        return
+##Convierto el pais ingresado a minusculas
+    pais_minusculas = pais_input.lower()
+##Utilizo get para buscar los paises en minusculas en el diccionario de paises
+## en minusculas(con la clave en minuscula y el nombre original como valor) 
+##y los guardo en una nueva variable
+    pais_real = paises_minusculas.get(pais_minusculas) 
+##Si se encontro una coincidencia con la nueva variable debe imprimir el pais y sus compras 
+    if pais_real:
+        print(f"\nEl país '{pais_real}' realizó {compras_por_pais[pais_real]} compras.")
+##Si no se encontro debe imprimir que ese pais no se encuentra en el archivo csv 
+    else:
+        print(f"\nEl país '{pais_input}' no se encuentra en los datos del archivo CSV.")
+##Creo la funcion para desarrollar el menu de mi programa e imprimo lo que hace mi programa
+def main():
+    print("Programa que consulta las compras realizdas por un país\n" + "-" * 30)
+##Guardo el archivo en una variable para hacerlo mas trabajable  
+    archivo = 'SalesJan2009.csv'
+##Uso try patra capturar excepciones en caso de que no pueda cargar los datos
+##del archivo csv usando la funcion cargar compras
+##Si sale bien obtengo 2 diccionarios el de las compras y el de los paises con su
+##clave en minuscula y su valor en mayuscula   
+    try:
+        compras_por_pais, paises_minusculas = cargar_compras(archivo)
+##Utilizo except para capturar posibles errores en la funcion de cargar compras
+## y los asigno a la variable e que contiene informacion del error,si este esta
+##lo imprimo y termino el programa con return
+    except Exception as e:
+        print(e)
+        return
+##Creo un bucle con las opciones de mi menu que solo se rompe al seleccionar salir   
+    while True:
+        print("\nOpciones disponibles:")
+        print("1. Consultar países por cantidad de compras")
+        print("2. Consultar cantidad de compras por país")
+        print("3. Salir del programa")
+##Guardo la opcion seleccionada desde consola        
+        opcion = input("\nSeleccione una opción (1-3): ")
+##Si esa opcion es igual a 1 guardo en la variable cantidad,el numero de compras
+## que deseo encontrar      
+        if opcion == '1':
+            cantidad= obtener_cantidad()
+##guardo en una variable una lista en donde en compras por pais item me devuelve
+##clave y valor convertidos en una lista de tuplas; pongo pais al inicio que agrega el nombre
+##del pais a la lista de resultados si cumple la condicion siguiente  en la que creo un for en el que itero
+##sobre cada tupla creada siendo el pais el primer elemento de la tupla,
+##y el contador,el segundo elemento de mi tupla, si contador es igual a la cantidad
+##ingresada por el usuaario va a filtrar los paises que la cumplan y los va agregar en el pais inicial(el primero que puse)
+            resultados = [pais for pais, contador in compras_por_pais.items() if contador == cantidad]
+            mostrar_resultados(resultados, cantidad)
+##Si seleccionan la opcion 2 se ejecuta la funcion consultar por pais a la que se le ingresan
+##los parametros compras por pais(Diccionario con pais y cantidad de compras) y paises minusculas(en el que estan los paises
+##en minusculas)          
+        elif opcion == '2':
+            consultar_por_pais(compras_por_pais, paises_minusculas)
+##Si selecciona la opcion 3 se rompe el bucle y se acaba el programa           
+        elif opcion == '3':
+            break
+##Si no se selecciona ninguna de las opciones disponibles salen los siguientes mensajes        
+        else:
+            print("Opción no válida. Por favor seleccione 1, 2 o 3")
+##Si seleccionaron 1 o 2 saldra este mensaje para regresar al menú       
+        input("\nPresione Enter para regresar al menú")
+    
+    print("\nGracias por usar el programa. ¡Vuelva pronto!")
+##Uso name que es una variable especial en python que crea en cada archivo
+##seria el nombre sin el .py,el codigo solo correra si name es el principal
+## y si es un archivo py por lo que si cumple con eso ejecutara el main
+##sino lo importo asi me generará problemas con las bibliotecas importadas
+##y tambien con los inputs del usuario por eso requiero usarlo.
+
+if __name__ == "__main__":
+    main()
