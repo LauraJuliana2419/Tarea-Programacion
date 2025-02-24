@@ -106,7 +106,7 @@ def consultar_por_pais(compras_por_pais, paises_minusculas):
         print(f"\nEl país '{pais_input}' no se encuentra en los datos del archivo CSV.")
 ##Creo la funcion para desarrollar el menu de mi programa e imprimo lo que hace mi programa
 def main():
-    print("Programa que consulta las compras realizdas por un país\n" + "-" * 30)
+    print("Programa que consulta las compras realizadas por un país\n" + "-" * 30)
 ##Guardo el archivo en una variable para hacerlo mas trabajable  
     archivo = 'SalesJan2009.csv'
 ##Uso try patra capturar excepciones en caso de que no pueda cargar los datos
